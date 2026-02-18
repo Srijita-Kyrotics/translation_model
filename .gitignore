@@ -8,15 +8,15 @@ __pycache__/
 venv/
 ENV/
 
-# Data Files (Crucial for Privacy and Size)
-data/raw/
-data/processed/
-data/translated/
-data/final/
-EBMT 1/
-*.docx
-*.csv
-*.txt
+# Data Files (Crucial for Privacy and Size - ALLOWED BY USER)
+# data/raw/
+# data/processed/
+# data/translated/
+# data/final/
+# EBMT 1/
+# *.docx
+# *.csv
+# *.txt
 
 # IDEs
 .vscode/

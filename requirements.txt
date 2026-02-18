@@ -1,0 +1,7 @@
+python-docx
+indic-nlp-library
+pandas
+transformers
+torch
+tqdm
+numpy
