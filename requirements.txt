@@ -1,0 +1,10 @@
+python-docx
+indic-nlp-library
+pandas
+transformers
+torch
+tqdm
+numpy
+scipy
+git+https://github.com/VarunGumma/IndicTransToolkit.git
+einops

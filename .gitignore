@@ -1,0 +1,27 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+
+# Data Files (Crucial for Privacy and Size - ALLOWED BY USER)
+# data/raw/
+# data/processed/
+# data/translated/
+# data/final/
+# EBMT 1/
+# *.docx
+# *.csv
+# *.txt
+
+# IDEs
+.vscode/
+.idea/
+
+# Large Model weights (usually handled by HF, but git shouldn't track them)
+models/
+.cache/
