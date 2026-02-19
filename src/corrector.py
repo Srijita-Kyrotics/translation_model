@@ -26,22 +26,38 @@ class GrammarCorrector:
         """Corrects grammar for a batch of sentences."""
         if self.model is None or self.tokenizer is None:
             raise ValueError("Corrector model not loaded. Call load_model() first.")
+        
+        # Minimum word count to attempt correction.
+        # Short strings (names, numbers, fragments) cause hallucinations.
+        MIN_WORDS_FOR_CORRECTION = 5
             
         # 1. Clean residual non-English characters (like \u09BC)
-        # Keep Latin, numbers, punctuation, and common symbols.
         cleaned_sentences = []
         for s in sentences:
-            # Remove characters that are NOT (Latin, numbers, punctuation, whitespace)
-            # This regex keeps ASCII printable characters.
             s = re.sub(r'[^\x00-\x7F]+', '', s) 
             cleaned_sentences.append(s.strip())
 
-        # 2. Prepare for T5
-        # flan-t5 models work well with natural language instructions
-        prefixed_sentences = [f"Fix grammar: {s}" for s in cleaned_sentences]
+        # 2. Separate short vs long sentences
+        # Only send long sentences to the corrector
+        indices_to_correct = []
+        sentences_to_correct = []
+        results = list(cleaned_sentences)  # start with cleaned originals
+
+        for i, s in enumerate(cleaned_sentences):
+            word_count = len(s.split())
+            if word_count >= MIN_WORDS_FOR_CORRECTION:
+                indices_to_correct.append(i)
+                sentences_to_correct.append(s)
+        
+        # If nothing to correct, return cleaned originals
+        if not sentences_to_correct:
+            return results
+
+        # 3. Run T5 correction only on longer sentences
+        prefixed = [f"Fix grammar: {s}" for s in sentences_to_correct]
         
         inputs = self.tokenizer(
-            prefixed_sentences, 
+            prefixed, 
             return_tensors="pt", 
             padding=True, 
             truncation=True,
@@ -57,16 +73,38 @@ class GrammarCorrector:
             )
         
         corrected = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
-        # Post-clean: Remove the prompt prefix if echoed by the model
-        final_corrected = []
-        for c in corrected:
-            # Handle various echo patterns: "Fix grammar:", "To fix grammar:", "I fix grammar:", "gec:"
-            clean = re.sub(r'^(To\s+)?(I\s+)?(Fix grammar|gec)[.:,]?\s*', '', c, flags=re.IGNORECASE)
-            # Apply again in case of double echo
-            clean = re.sub(r'^(To\s+)?(I\s+)?(Fix grammar|gec)[.:,]?\s*', '', clean, flags=re.IGNORECASE)
-            final_corrected.append(clean.strip())
+        
+        # 4. Post-clean and validate each correction
+        hallucination_pattern = re.compile(
+            r'(fix\s+(the\s+)?grammar|change\s+(the\s+)?grammar|failed\s+grammar|gec)',
+            re.IGNORECASE
+        )
+        
+        for idx, original, corrected_text in zip(indices_to_correct, sentences_to_correct, corrected):
+            # Strip any echoed prompt prefix
+            clean = re.sub(
+                r'^(To\s+)?(I\s+)?(Fix\s+(the\s+)?grammar|Change\s+(the\s+)?grammar|Failed\s+grammar|gec)[.:,;]?\s*',
+                '', corrected_text, flags=re.IGNORECASE
+            )
+            # Apply twice for double echoes
+            clean = re.sub(
+                r'^(To\s+)?(I\s+)?(Fix\s+(the\s+)?grammar|Change\s+(the\s+)?grammar|Failed\s+grammar|gec)[.:,;]?\s*',
+                '', clean, flags=re.IGNORECASE
+            )
+            clean = clean.strip()
             
-        return final_corrected
+            # Fallback to original if correction looks bad:
+            # - Still contains hallucination markers
+            # - Is empty
+            # - Is drastically shorter (lost content)
+            if (not clean 
+                or hallucination_pattern.search(clean)
+                or len(clean) < len(original) * 0.3):
+                results[idx] = original
+            else:
+                results[idx] = clean
+            
+        return results
 
 if __name__ == "__main__":
     # Simple test

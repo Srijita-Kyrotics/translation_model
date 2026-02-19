@@ -1,7 +1,7 @@
 Buckingham and Carnatic Co., Ltd.
-vs.
+Vs
 The staff at Buckingham Palace are:
-Carnatic Computer Ltd.
+Carnatic Co. LTD
 [Justices, Mehar Chand, Mahajan, and Babawati]
 Indian Factories Act (XXV of 1934), S. 1949-B - Industrial Disputes Act (XIV of 1947), Section 2 (q) - Employees striking for work for several hours by concerted action - whether "strike" - continuation of service, whether interrupted - loss of right to leave with pay.
 Whereas on a particular day the night shift workers of a section of a textile mill stopped work at 4 pm till about 8 pm, the ostensible reason for the strike is that the management of the mills expressed their inability to comply with the request of the workers to declare the morning of that day as a solar eclipse holiday and it was found that the stoppage of work was the result of concerted action:
@@ -18,7 +18,7 @@ The mill and the union appealed this decision to the Labour Appeal Tribunal. Tha
 "It would be unreasonable to treat an unauthorized absence from work for half an hour or less of the workday as an interruption of service by a worker for the purposes of this section. Assume that in the circumstances of the case, a stoppage of work for a period of about 2 to 4 hours would not be considered a strike, so that there is a break in the continuity of service by the worker concerned."
 Consequently, the union's appeal in the matter was allowed and it was ordered that the holidays at full rate as per the Factories Act, 1949-A, were to be counted in respect of the operatives concerned who had ceased to work on November 1, 1948 and there was no break in the continuity of their services.
 In this appeal it was argued on behalf of the mill that the management was correct in its decision regarding the proper construction of Section 49-B (1) of the Factories Act (XXV of 1934) that the continuity of service was broken due to the unlawful strike and that the workers were not entitled to annual leave with pay under the said section, as they could not complete the period of 12 months of continuous service in the factory, and that the unauthorised absence from work for a period ranging from 2 to 4 hours resulted in it being an unlawful strike and the consequent disruption of service of a worker for the purposes of Section 1949-B.
-Failed grammar. 29:30.
+29
 In our judgment, this contention is well founded. Section 49-B provides-
 "Every worker who has completed a period of 12 months or more of continuous service in a factory shall be allowed, for the next 12 months, ten consecutive days of leave, or, if a child, fourteen consecutive days, including the days, if any, he is entitled to leave under sub-section (1) of section 35.
 Explanation. -A worker shall be deemed to have completed twelve months of continuous service in a factory in spite of any interruption in service during such 12 months not exceeding ninety days in total due to illness, accident or sanctioned leave or all three or by a lockout, a strike which is not an unlawful strike, or not more than thirty days of involuntary unemployment...

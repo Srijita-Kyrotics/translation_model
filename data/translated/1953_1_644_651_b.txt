@@ -1,6 +1,6 @@
-Fix the grammar: shithurt kummar
-vs.
-The state of West Bengal.
+shishir kumar dutt
+Vs
+State of West Bengal
 Union of India - The Intervenor.
 [Justices: Ramon y Cajal, CJI, Mukerjee, Chandrashekhar Iyer, Vivian Bose and Ghulam Hazzam].
 Essential Supplies (Turnbull) (Temporary Powers) Act, 1949, Section 4 - Extension of the Act to March 31, 1951, Resolution of the Constituent Assembly - Justification for Powers of the Constitution of India (Central Government and Legislature) Act, 1946, Section 4, 2-A - India (Provisional Constitution) Order, 1947 - Constitution of India, 1949, Articles 376, 379, (1), 394.
@@ -8,9 +8,9 @@ The Essential Supplies (Turnbull) (Temporary Powers) Act, 1949, a temporary law 
 The order, which, even assuming under Article 379 (1) that the Provisional Parliament was intended to function from November 26, 1949, and not from January 26, 1950, as the Constituent Assembly continued till January 26, 1949, was vested with powers as a body under the India (Central Government and Legislature) Act, 1946, of the British Parliament, in the same manner as the India (Provisional Constitution) Order, 1947, could have been validly exercised on December 20, 1949, and thus given effect when the ratification was passed on that date. The Provisional Parliament had not been authorised to exercise the special powers of granting extensions mentioned in Section 4 of the India (Constitutional) Law, 1946, which did not give the Provisional Government one of the powers conferred by the Constitution, nor could it bring the Provisional Constitution into existence on November 26, 1949 , presuming that the case would be considered as "another provision" made by the Constituent Assemblies under the Indian Constitutional Law, 1946.
 It is further held that the proposed extension of the life of the Act beyond February 26, 1950, was not justified, as it came into force immediately and not on April 1, 1950, when the previous extension had expired. Accordingly, the Act with the extended term on the basis of the proposed policy was an Act in force immediately before the commencement of the Constitution and was therefore preserved in Article 372 (1) and Explanation III.
 Criminal Appeal Judicature: Case No. 275 of 1951. Appeal under Article 132 (1) of the Constitution of India from a judgment and order dated April 11, 1951 in Criminal Revision Case No. 1028 of 1950 in the High Court of Calcutta (Das Gupta and Mukherjee JA) dated November 23, 1950, in the Presidency Magistrate, 8th Court, Cacutta, of 1949. Case No. 2107.
-Fix the grammar: thank you for the recommendation.
+..Chakraborty for the appellant.
 B. Send it to the respondent.
-Fix the grammar: Sir, David, Attorney-General for India (P. A. Mehta, with him), is the interrogator.
+Sir, David, Attorney-General for India (P. A. Mehta, with him), is the interrogator.
 Judgment of the court was delivered on December 5, 1952.
 Mr. Bose is appealing against an article in the Constitution under Article 132 (1) of the Constitution. The Calcutta High Court has allowed the appeal.
 The appellant was convicted under Section 7 (1) of the Essential Supplies (Temporary Powers) Act, 1949, for the offence committed on October 24, 1950. The conviction was on two counts: (1) above the regulated rate for the sale of clothes and (2) for non-issuance of cash memos. The sentence was three months in prison with a fine of Rs 200 and a further three months in default. The trial was held before the Eighth Constitutional Magistrate, Kolkata, who adopted a summary procedure.
@@ -18,7 +18,7 @@ Revision was appealed to the High Court but was dismissed. Permission was then s
 The fairness of this Act was challenged in Jayalala Agarwal v. State (1) but this Court held that the Act was fair up to March 31, 1950, that is, the life of the Act on the date relevant to that case. It is necessary to explain that the Act is a temporary Act and its life has been extended from time to time for a period of one year beyond the date of its first expiry. The last extension on the date of the previous case was up to May 31, 1950. We are therefore beginning with the position that the Bill was a good Bill up to this date.
 By a resolution dated December 20, 1989, this Act was extended until March 31, 1951. This is the extension which we are concerned about and which is now being objected to, the argument being that there was no legislative body in existence on that date capable of extending the life of the Act for another year.
 The newspaper notice setting out the proposed policy stipulates the following conditions:
-(1) [1952] ... 127.
+(1) [1952] ...127.
 "New Delhi, December 22, 1989.
 No. 7 W.L. (1) 47.- Resolution which was adopted by the Constituent Assembly (Legislative) at its meeting held on December 20, 1949, is hereby released for general information:
 Pursuant to the provisions of section 4 of the India (Central Government and Legislature) Act, 1949, as adapted by the India (Provisional Constitution) Order, 1947, this Assembly hereby approves the extension of the period referred to in sections 2 and 3 of the said Act for a further period of 12 months commencing on the first day of April, 1950. "
@@ -42,7 +42,7 @@ It was in force because of Article 372 (1) and Explanation III, until it expired
 This puts an end to the constitutional issues. We hold that a body existed at all material times to extend the life of the Act until March 31, 1951, and that it was able to extend its life on December 20, 1949. The Act continued to be a living law even after the Constitution was in force on the date of the offence, that is, October 28, 1950.
 The Counsel then sought to plead guilty on other grounds but as the appeal application was confined to constitutional matters, he could no longer be allowed to speak. Of course, it was appropriate for him to make a separate application for special leave to appeal on other matters but if he had done so it would have followed the usual rules and he would have been obliged to obtain special leave in the normal course. We have therefore treated this part of the arguments as seeking special leave for appeal. We have heard him fully and are of the opinion that these remaining opinions are not those on which special leave to apply should be granted. We therefore refuse this irregular application for special left to appeal on its merits.
 The appeal filed under Article 132 (1) was also dismissed.
-The appeal is rejected.
+The appeal was rejected.
 On behalf of the appellant: Mr. Bean.
 On behalf of the respondent: P. K. Bose.
 For the interrogator: G. H. Ramachandra.

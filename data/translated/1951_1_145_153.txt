@@ -1,7 +1,7 @@
 Roy and Ramon y Cajal are brothers.
-vs.
-Fix the grammar: see the brothers.
-[Justices: Syed Fazal, Jameer Khan, Momok Jee and Chandrashekhar Aiyar.]
+Vs
+see the brothers.
+[Justices: Syed Fazal, Jameer Khan, Momoka and Chandrashekhar Aiyar.]
 Bihar Buildings (Lease, Rent and Eviction) Regulation Act (IV of 1949), Section 1 - Controller's order for eviction on account of non-payment of rent - Suit for setting aside the order - Jurisdiction of civil court - Whether question- Paying was the finality of the Controller's decision.
 Section 11 of the Bihar Building (Lease, Rent and Eviction) Regulations, 1949, conferred a jurisdiction on the control, which includes the jurisdiction to determine whether the rent has been paid, as well as the jurisdiction to order the eviction of the tenant even if the rent has not been paid. Therefore, even if a control has wrongly decided on the question of whether the rent is not paid, his order of eviction cannot be questioned in a civil court on the ground that the rent was not paid.
 Quinn v Commissioners of Revenue (2 P.B.D.313) and Colonial Bank of Australia v Willan (L.R. 5 P.C. 4:1).
@@ -25,7 +25,7 @@ It seems to us that the view taken by the High Court is not correct. Section 1 1
 This section provides that "Subject to the decision of the Commissioner and only such decision, an order of the Controller shall be final, and shall not be liable to be questioned in any court of law in relation to any litigation or any other proceeding under appeal or revision." The Act thus sets up a whole apparatus for the investigation of all matters on which the Controller's jurisdiction to order the eviction of a tenant depends, and it expressly makes his order final, and subject only to the judgment of the Commissioner. The Act empowers the Controller alone to decide whether the rent is being paid or not, and his decision on this question is essential before passing an order under section 11. See whether it is at all possible to question the Commissioner's decision on any matter which the Act expressly empowers him to decide. The law on this subject is very clearly stated in the words of Lord Chancellor. by The Queen v. Commissioners for Special Purposes of the Income-Tax (1), as follows: -
 "When an inferior court or tribunal or body, which has to exercise its power to decide facts, is first established by an Act of Parliament, the legislature has to consider what powers it will give to that tribunal or body. It may effectively say that, if a certain condition exists and something is shown to such a tribunal or body before it is done, it will have jurisdiction to do such things, but not otherwise. There is no final decision for them to decide whether this event is true or not. And if they exercise jurisdiction without its existence, then what they do may be called into question, and it will be assumed that they have acted without jurisdiction. There is, however, a further circumstance which may exist. The legislature may trust the tribunal or body with a jurisdiction, which includes the jurisdiction to determine whether a state of primary fact exists as well as the jurisdiction to find whether it exists, in order to do so when some other legislature establishes such a court or body with limited jurisdiction.
 (1) 2 1 B.D. 3.31, 3.09
-Change the grammar: 2 0
+2 0
 There is also to be considered, whatever jurisdiction they give them, whether there will be any appeal from their decision, or whether there will not be any. In the second of the two cases I have pointed out that it is an erroneous application of the formula that the Tribunal cannot give itself jurisdiction by wrongly determining the existence of certain facts, because the Legislature has given it jurisdiction to determine all the facts, including their existence. The primary facts upon which the further exercise of their jurisdiction depends; and if they are given such jurisdiction to decide, there is no appeal from the exercise of that jurisdiction, except to grant any appeal. "
 In the same line are the following observations of Sir James Colville in The Colonial Bank of Australia v. Willan (1), a case relating to the principles on which a right of certiorari may be issued: --
 "Accordingly, the authority ... establishes that a judgment by the judge having jurisdiction over the matter, if no error can be seen on his face, shall be taken as conclusive of the facts stated therein; and the Queen's Bench of the Court shall not overrule on this ground a judgment that any such fact, however necessary, has been wrongly found."
@@ -34,5 +34,5 @@ There is no doubt that the present case falls within the second category referre
 Accordingly, the appellants shall be entitled to all costs incurred by the court in granting the appeal, setting aside the judgment and restoring its decree.
 The appeal has been allowed.
 The Appellant's name is R. C. Prashant.
-Fix the grammar: The agent of the respondent: S. P. Verma.
+The agent of the respondent: S. P. Verma.
 The judgment translated into the local language is limited in use and understanding by the litigant in the local language and cannot be used for any other purpose. For all practical and official purposes, the English version of the judgment shall be authentic and shall be applicable for the purposes of operation and enforcement.
