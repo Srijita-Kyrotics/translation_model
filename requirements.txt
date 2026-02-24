@@ -8,3 +8,11 @@ numpy
 scipy
 git+https://github.com/VarunGumma/IndicTransToolkit.git
 einops
+pymupdf
+requests
+beautifulsoup4
+peft
+bitsandbytes
+datasets
+accelerate
+PyYAML
