@@ -25,3 +25,5 @@ EBMT 1/
 # Large Model weights (usually handled by HF, but git shouldn't track them)
 models/
 .cache/
+indictrans2-finetuned-court/
+indictrans2-merged-court/

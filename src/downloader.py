@@ -48,30 +48,51 @@ def process_pair(session, urls, en_dir, bn_dir):
 
 def main():
     base_url = "https://calcuttahighcourt.gov.in"
-    source_url = "https://calcuttahighcourt.gov.in/show_judgements_sc"
-    
-    session = requests.Session()
-    session.mount("https://", LegacyRenegotiationAdapter())
-    
-    print(f"Fetching links from {source_url}...")
+def get_pdf_links(session, url, base_url="https://calcuttahighcourt.gov.in"):
+    """Fetch and return all PDF links from a given URL."""
+    print(f"Fetching links from {url}...")
     try:
-        response = session.get(source_url, timeout=30, verify=False)
+        response = session.get(url, timeout=30, verify=False)
         response.raise_for_status()
     except Exception as e:
-        print(f"Failed to fetch page: {e}")
-        return
+        print(f"Failed to fetch page {url}: {e}")
+        return []
 
     soup = BeautifulSoup(response.text, 'html.parser')
     links = soup.find_all('a', href=True)
     
-    pdf_links = [link['href'] for link in links if link['href'].endswith('.pdf')]
-    print(f"Found {len(pdf_links)} total PDF links.")
+    pdf_links = []
+    for link in links:
+        href = link['href']
+        if href.endswith('.pdf'):
+            full_url = href if href.startswith('http') else base_url + href
+            pdf_links.append(full_url)
+    
+    print(f"Found {len(pdf_links)} PDF links on {url}.")
+    return pdf_links
+
+def main():
+    base_url = "https://calcuttahighcourt.gov.in"
+    source_urls = [
+        "https://calcuttahighcourt.gov.in/show_judgements_sc", # Supreme Court
+        "https://calcuttahighcourt.gov.in/show_judgements_hc", # High Court
+        "https://calcuttahighcourt.gov.in/show_judgements_i"   # Historically Important
+    ]
+    
+    session = requests.Session()
+    session.mount("https://", LegacyRenegotiationAdapter())
+    
+    all_pdf_links = []
+    for url in source_urls:
+        all_pdf_links.extend(get_pdf_links(session, url, base_url))
+        time.sleep(1) # Polite delay between pages
+    
+    print(f"Aggregated {len(all_pdf_links)} total PDF links across all categories.")
 
     # Match pairs
     pairs = {}
-    for link in pdf_links:
-        full_url = link if link.startswith('http') else base_url + link
-        file_name = link.split("/")[-1]
+    for full_url in all_pdf_links:
+        file_name = full_url.split("/")[-1]
         
         # Base name is everything before _e.pdf or _b.pdf
         if file_name.endswith('_e.pdf'):

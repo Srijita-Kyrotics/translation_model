@@ -1,23 +1,29 @@
 from datasets import Dataset, DatasetDict
 import os
+import pandas as pd
 
-def prepare_dataset(bn_path, en_path, output_dir):
+def prepare_dataset(csv_path, output_dir):
     """
-    Reads aligned .bn and .en files and creates a Hugging Face Dataset.
+    Reads the aligned parallel_corpus.csv and creates a Hugging Face Dataset.
     Splits it into train and validation sets.
     """
-    print(f"Loading data from {bn_path} and {en_path}...")
+    print(f"Loading data from {csv_path}...")
     
-    with open(bn_path, "r", encoding="utf-8") as f_bn:
-        bn_lines = [line.strip() for line in f_bn]
-        
-    with open(en_path, "r", encoding="utf-8") as f_en:
-        en_lines = [line.strip() for line in f_en]
+    df = pd.read_csv(csv_path)
+    # Ensure there are no null rows and drop them
+    df = df.dropna(subset=['bengali', 'english'])
+    
+    # Randomly shuffle data, very important since it's ordered by doc
+    df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+    
+    # Optional: ensure we only pass standard strings as lists
+    bn_lines = df['bengali'].astype(str).tolist()
+    en_lines = df['english'].astype(str).tolist()
         
     if len(bn_lines) != len(en_lines):
-        raise ValueError("Bengali and English files must have the same number of lines!")
+        raise ValueError("Bengali and English columns must have the same number of lines!")
     
-    print(f"Total pairs: {len(bn_lines)}")
+    print(f"Total valid aligned pairs to prepare: {len(bn_lines)}")
     
     # Create dataset
     raw_data = {
@@ -26,9 +32,9 @@ def prepare_dataset(bn_path, en_path, output_dir):
     }
     dataset = Dataset.from_dict(raw_data)
     
-    # Split: 98% Train, 2% Val
-    # 2% of 600K is ~12K, which is plenty for evaluation
-    ds_split = dataset.train_test_split(test_size=0.02, seed=42)
+    # Split: 99% Train, 1% Val
+    # 1% of 150K is ~1.5K
+    ds_split = dataset.train_test_split(test_size=0.01, seed=42)
     
     final_ds = DatasetDict({
         "train": ds_split["train"],
@@ -39,15 +45,14 @@ def prepare_dataset(bn_path, en_path, output_dir):
     
     os.makedirs(output_dir, exist_ok=True)
     final_ds.save_to_disk(output_dir)
-    print(f"Dataset saved to {output_dir}")
+    print(f"Dataset successfully packaged and saved to {output_dir}")
 
 if __name__ == "__main__":
     DATA_DIR = os.path.join("data", "final")
-    BN_FILE = os.path.join(DATA_DIR, "corpus.bn")
-    EN_FILE = os.path.join(DATA_DIR, "corpus.en")
+    CSV_FILE = os.path.join(DATA_DIR, "parallel_corpus.csv")
     OUTPUT_DIR = os.path.join(DATA_DIR, "hf_dataset")
     
-    if os.path.exists(BN_FILE) and os.path.exists(EN_FILE):
-        prepare_dataset(BN_FILE, EN_FILE, OUTPUT_DIR)
+    if os.path.exists(CSV_FILE):
+        prepare_dataset(CSV_FILE, OUTPUT_DIR)
     else:
-        print("Error: Alignment files not found in data/final/")
+        print(f"Error: Alignment file {CSV_FILE} not found!")

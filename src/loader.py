@@ -13,15 +13,28 @@ def extract_text_from_docx(file_path):
     return full_text
 
 def extract_text_from_pdf(file_path):
-    """Extracts all text from a .pdf file and returns it as a list of lines."""
-    doc = fitz.open(file_path)
-    full_text = []
-    for page in doc:
-        text = page.get_text("text")
-        # Split into lines and filter empty ones
-        lines = [line.strip() for line in text.split('\n') if line.strip()]
-        full_text.extend(lines)
-    return full_text
+    """
+    Extracts text line by line from a PDF while preserving layout as much as possible.
+    """
+    text_lines = []
+    try:
+        doc = fitz.open(file_path)
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            blocks = page.get_text("blocks")
+            # Sort blocks top-to-bottom, then left-to-right to maintain reading order
+            blocks.sort(key=lambda b: (b[1], b[0]))
+            
+            for b in blocks:
+                text = b[4].strip()
+                if text: # Ignore empty blocks
+                    # Split into lines if the block contains multiple lines
+                    lines = text.split('\n')
+                    text_lines.extend([line.strip() for line in lines if line.strip()])
+        doc.close()
+    except Exception as e:
+        print(f"Failed to open or read file {file_path}: {e}")
+    return text_lines
 
 def process_directory(input_dir, output_dir, file_ext="*.docx"):
     """Processes all files with given extension in the input directory and saves them as .txt in output_dir."""
