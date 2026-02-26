@@ -75,6 +75,8 @@ class Translator:
                 **inputs, 
                 max_length=1024,
                 num_beams=5,
+                repetition_penalty=1.2, # Prevent runaway underscores/repetition
+                early_stopping=True,
                 num_return_sequences=1,
                 use_cache=use_cache
             )

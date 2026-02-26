@@ -5,11 +5,11 @@ from tqdm import tqdm
 from src.translator import Translator
 
 class StructuredTranslator:
-    def __init__(self, model_name="prajdabre/rotary-indictrans2-indic-en-1B", src_lang="ben_Beng", tgt_lang="eng_Latn", use_correction=True):
+    def __init__(self, src_lang="ben_Beng", tgt_lang="eng_Latn", adapter_path=None, use_correction=True):
         self.translator = Translator(
-            model_name=model_name, 
             src_lang=src_lang, 
             tgt_lang=tgt_lang, 
+            adapter_path=adapter_path,
             use_correction=use_correction
         )
         self.src_lang = src_lang

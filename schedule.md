@@ -20,6 +20,7 @@ This project aims to enhance translation quality for legal judgments between Ben
 
 ### Phase 3: System Enhancements
 *   **Bidirectional Support**: Updated the `Translator` suite to support both **BN-to-EN** (Fine-tuned) and **EN-to-BN** (Base) directions.
+*   **Table Translation**: Implemented structured translation support via `StructuredTranslator` to preserve table layouts (headers/rows) during translation.
 *   **Bug Resolution**: Resolved a critical model cache error in the `en-indic` model by implementing a dynamic KV-cache toggle.
 *   **Demo Assets**: Generated mock/real YAML translation pairs (English source -> Bengali translation) to demonstrate production readiness.
 
