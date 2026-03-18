@@ -28,10 +28,21 @@ class Translator:
         self.corrector = None
         
     def load_model(self):
-        """Loads the transformers model, tokenizer, IndicProcessor, and optional LoRA adapter."""
-        from peft import PeftModel
-        
-        print(f"Loading base model: {self.model_name} on {self.device}...")
+        """Loads the fine-tuned legal models or falls back to base IndicTrans2."""
+        # Determine paths to potential fine-tuned models
+        ft_bn_en = "./indictrans2-finetuned-bn-en/stage1"
+        ft_en_bn = "./indictrans2-finetuned-en-bn/stage1"
+
+        if self.src_lang == "ben_Beng" and os.path.exists(ft_bn_en):
+            print(f"Loading FINE-TUNED Legal Model (BN->EN) from {ft_bn_en}...")
+            self.model_name = ft_bn_en
+        elif self.src_lang == "eng_Latn" and os.path.exists(ft_en_bn):
+            print(f"Loading FINE-TUNED Legal Model (EN->BN) from {ft_en_bn}...")
+            self.model_name = ft_en_bn
+        else:
+            print(f"Fine-tuned models not found for direction {self.src_lang}->{self.tgt_lang}. Falling back to base: {self.model_name}")
+
+        print(f"Loading model weight on {self.device}...")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
             self.model_name, 
@@ -39,23 +50,20 @@ class Translator:
             torch_dtype=torch.float16
         )
         
-        if self.adapter_path and os.path.exists(self.adapter_path):
-            if "indic-en" in self.model_name:
-                print(f"Applying LoRA adapter from {self.adapter_path}...")
-                self.model = PeftModel.from_pretrained(self.model, self.adapter_path)
-            else:
-                print(f"Warning: Adapter ignored. Adapters currently only supported for indic-en direction.")
-        
         self.model = self.model.to(self.device)
         self.model.eval()
         
         self.ip = IndicProcessor(inference=True)
-        print("Translation model loaded successfully.")
+        print(f"Model ({self.model_name}) loaded successfully.")
 
         if self.use_correction:
-            print("Initializing Grammar Corrector...")
-            self.corrector = GrammarCorrector()
-            self.corrector.load_model()
+            if self.tgt_lang.startswith("eng"):
+                print("Initializing Grammar Corrector...")
+                self.corrector = GrammarCorrector()
+                self.corrector.load_model()
+            else:
+                print(f"Skipping English Grammar Corrector for non-English target language: {self.tgt_lang}")
+                self.use_correction = False
 
     def translate_batch(self, sentences):
         """Translates a batch of sentences using IndicTrans2 and optionally corrects grammar."""
@@ -73,9 +81,9 @@ class Translator:
         with torch.no_grad():
             generated_tokens = self.model.generate(
                 **inputs, 
-                max_length=1024,
-                num_beams=5,
-                repetition_penalty=1.2, # Prevent runaway underscores/repetition
+                max_length=512, # Reduced for speed
+                num_beams=1,   # Greedy for speed
+                repetition_penalty=1.2,
                 early_stopping=True,
                 num_return_sequences=1,
                 use_cache=use_cache

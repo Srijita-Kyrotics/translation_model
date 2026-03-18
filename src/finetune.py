@@ -8,24 +8,26 @@ from transformers import (
     Seq2SeqTrainer,
     DataCollatorForSeq2Seq,
 )
-from peft import (
-    LoraConfig,
-    get_peft_model,
-    TaskType
-)
 
-def finetune():
-    model_name = "prajdabre/rotary-indictrans2-indic-en-1B"
+def finetune(direction="bn-en"):
+    if direction == "bn-en":
+        model_name = "prajdabre/rotary-indictrans2-indic-en-1B"
+        src_lang, tgt_lang = "ben_Beng", "eng_Latn"
+        output_dir = "./indictrans2-finetuned-bn-en"
+    else:
+        model_name = "prajdabre/rotary-indictrans2-en-indic-1B"
+        src_lang, tgt_lang = "eng_Latn", "ben_Beng"
+        output_dir = "./indictrans2-finetuned-en-bn"
+
     dataset_path = os.path.join("data", "final", "hf_dataset")
-    output_dir = "./indictrans2-finetuned-court"
     
-    print(f"Loading dataset from {dataset_path}...")
+    print(f"Loading dataset from {dataset_path} for direction {direction}...")
     dataset = load_from_disk(dataset_path)
     
     # 1. Load Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     
-    # 2. Load Model in fp16 (no quantization to avoid deepcopy crash)
+    # 2. Load Model in fp16
     print(f"Loading model {model_name} in fp16...")
     model = AutoModelForSeq2SeqLM.from_pretrained(
         model_name,
@@ -37,33 +39,23 @@ def finetune():
     # 3. Enable gradient checkpointing to save VRAM
     model.gradient_checkpointing_enable()
     
-    # 4. Freeze all base model parameters
+    # 4. UNFREEZE all model parameters
+    print("Unfreezing all model parameters for full-parameter fine-tuning...")
     for param in model.parameters():
-        param.requires_grad = False
-        if param.ndim == 1:
-            param.data = param.data.to(torch.float32)
+        param.requires_grad = True
     
-    # 5. LoRA Config
-    lora_config = LoraConfig(
-        r=16,
-        lora_alpha=32,
-        target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
-        lora_dropout=0.05,
-        bias="none",
-        task_type=TaskType.SEQ_2_SEQ_LM
-    )
-    
-    model = get_peft_model(model, lora_config)
-    model.print_trainable_parameters()
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Total trainable parameters: {total_params / 1e9:.2f}B")
     
     # Preprocessing function
-    src_lang = "ben_Beng"
-    tgt_lang = "eng_Latn"
-    
     def preprocess_function(examples):
         # IndicTrans2 tokenizer expects: "src_lang tgt_lang actual_text"
-        inputs = [f"{src_lang} {tgt_lang} {text}" for text in examples["bengali"]]
-        targets = examples["english"]
+        if direction == "bn-en":
+            inputs = [f"{src_lang} {tgt_lang} {text}" for text in examples["bengali"]]
+            targets = examples["english"]
+        else:
+            inputs = [f"{src_lang} {tgt_lang} {text}" for text in examples["english"]]
+            targets = examples["bengali"]
         
         model_inputs = tokenizer(inputs, max_length=512, truncation=True)
         
@@ -73,7 +65,7 @@ def finetune():
         model_inputs["labels"] = labels["input_ids"]
         return model_inputs
 
-    print("Tokenizing dataset...")
+    print(f"Tokenizing dataset for {direction}...")
     tokenized_dataset = dataset.map(
         preprocess_function, 
         batched=True, 
@@ -92,22 +84,23 @@ def finetune():
     # 6. Training Arguments
     training_args = Seq2SeqTrainingArguments(
         output_dir=output_dir,
-        per_device_train_batch_size=1,
-        gradient_accumulation_steps=8,
-        learning_rate=2e-4,
-        max_steps=1000,
+        per_device_train_batch_size=1, 
+        gradient_accumulation_steps=128, 
+        learning_rate=1e-4, 
+        weight_decay=0.0001, 
+        max_steps=5000, 
         logging_steps=50,
         eval_strategy="steps",
-        eval_steps=200,
-        save_steps=200,
-        save_total_limit=2,
+        eval_steps=500,
+        save_steps=500,
+        save_total_limit=3,
         predict_with_generate=False,
         fp16=True,
-        push_to_hub=False,
-        report_to="none",
         gradient_checkpointing=True,
         optim="adamw_torch",
-        label_smoothing_factor=0.0,
+        lr_scheduler_type="inverse_sqrt",
+        label_smoothing_factor=0.1,
+        warmup_steps=4000,
     )
     
     # 7. Trainer
@@ -120,12 +113,21 @@ def finetune():
         data_collator=data_collator
     )
     
-    print("Starting training...")
+    print(f"Starting training Stage 1 for {direction}...")
     trainer.train()
     
-    # Save the adapter
-    trainer.save_model(output_dir)
-    print(f"Fine-tuning complete. Model saved to {output_dir}")
+    # Save Stage 1 results
+    stage1_output = os.path.join(output_dir, "stage1")
+    trainer.save_model(stage1_output)
+    print(f"Stage 1 {direction} complete. Model saved to {stage1_output}")
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Fine-tune IndicTrans2 for legal judgments.")
+    parser.add_argument("--direction", type=str, default="bn-en", choices=["bn-en", "en-bn"], help="Translation direction to fine-tune.")
+    args = parser.parse_args()
+    
+    finetune(direction=args.direction)
 
 if __name__ == "__main__":
     finetune()
