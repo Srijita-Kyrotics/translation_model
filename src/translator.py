@@ -18,7 +18,11 @@ class Translator:
         
         # Select base model based on direction
         if src_lang.startswith("eng"):
-            self.model_name = "prajdabre/rotary-indictrans2-en-indic-1B"
+            local_path = "/home/kyrotics/.cache/huggingface/hub/models--prajdabre--rotary-indictrans2-en-indic-1B/snapshots/c44b2b145b4b1b3f324164c5a3bb4cefaf647b07"
+            if os.path.exists(local_path):
+                 self.model_name = local_path
+            else:
+                 self.model_name = "prajdabre/rotary-indictrans2-en-indic-1B"
         else:
             self.model_name = "prajdabre/rotary-indictrans2-indic-en-1B"
             
@@ -43,11 +47,17 @@ class Translator:
             print(f"Fine-tuned models not found for direction {self.src_lang}->{self.tgt_lang}. Falling back to base: {self.model_name}")
 
         print(f"Loading model weight on {self.device}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True)
+        is_local = os.path.isdir(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name, 
+            trust_remote_code=True,
+            local_files_only=is_local
+        )
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
             self.model_name, 
             trust_remote_code=True,
-            torch_dtype=torch.float16
+            torch_dtype=torch.float16,
+            local_files_only=is_local
         )
         
         self.model = self.model.to(self.device)

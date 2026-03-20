@@ -13,10 +13,11 @@ except LookupError:
     nltk.download('punkt_tab')
     nltk.download('punkt')
 
-def translate_corpus(input_dir, output_dir, batch_size=24):
+def translate_corpus(input_dir, output_dir, batch_size=32):
     """
     Translates all English txt files in input_dir to Bengali.
     Saves results in output_dir with same filename suffixes for pairing.
+    Handles '--- PAGE BREAK ---' markers by translating page-by-page.
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -32,7 +33,11 @@ def translate_corpus(input_dir, output_dir, batch_size=24):
     print(f"Found {len(txt_files)} English files to translate.")
 
     # Main translation loop
-    for file_path in tqdm(txt_files, desc="Translating files"):
+    total = len(txt_files)
+    for i, file_path in enumerate(txt_files):
+        if i % 10 == 0:
+            print(f"Progress: {i}/{total} files ({(i/total)*100:.2f}%)")
+        
         filename = os.path.basename(file_path)
         output_path = os.path.join(output_dir, filename)
         
@@ -48,17 +53,31 @@ def translate_corpus(input_dir, output_dir, batch_size=24):
             if not raw_text:
                 continue
 
-            sentences = nltk.sent_tokenize(raw_text)
-            translated_lines = []
-            
-            # Translate in batches
-            for i in range(0, len(sentences), batch_size):
-                batch = sentences[i:i+batch_size]
-                translated_batch = translator.translate_batch(batch)
-                translated_lines.extend(translated_batch)
+            # Page-Aware Logic: Split by the marker
+            page_marker = "--- PAGE BREAK ---"
+            pages = raw_text.split(page_marker)
+            translated_pages = []
 
-            # Join with newlines
-            translated_content = "\n".join(translated_lines)
+            for page in pages:
+                page = page.strip()
+                if not page:
+                    translated_pages.append("")
+                    continue
+                
+                # Sentence tokenize the page
+                sentences = nltk.sent_tokenize(page)
+                translated_sentences = []
+                
+                # Translate in batches
+                for i in range(0, len(sentences), batch_size):
+                    batch = sentences[i:i+batch_size]
+                    translated_batch = translator.translate_batch(batch)
+                    translated_sentences.extend(translated_batch)
+                
+                translated_pages.append("\n".join(translated_sentences))
+
+            # Re-join with the marker
+            translated_content = f"\n\n{page_marker}\n\n".join(translated_pages)
 
             # Atomic write
             temp_path = output_path + ".tmp"
@@ -78,8 +97,8 @@ def translate_corpus(input_dir, output_dir, batch_size=24):
 
 if __name__ == "__main__":
     INPUT_DIR = "data/raw/judgments_en/"
-    OUTPUT_DIR = "data/raw/judgments_en_translated/"
+    OUTPUT_DIR = "data/translated/"
     
     # Run translation
-    # Batch size of 24 is conservative for 24GB VRAM
-    translate_corpus(INPUT_DIR, OUTPUT_DIR, batch_size=24)
+    # Batch size of 32 is safe for stable background operation
+    translate_corpus(INPUT_DIR, OUTPUT_DIR, batch_size=32)
