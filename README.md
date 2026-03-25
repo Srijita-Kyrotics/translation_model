@@ -1,8 +1,8 @@
-# High-Density Legal Parallel Corpus Pipeline ⚖️🏹
+# High-Density Legal Parallel Corpus Pipeline 
 
 A professional-grade, massive-scale pipeline for building gold-standard Bengali-English parallel corpora from legal judgments. This system processed 5,370+ Calcutta High Court judgments using state-of-the-art OCR, NMT, and semantic alignment.
 
-## 🚀 Architecture Overview
+##  Architecture Overview
 
 The pipeline operates in three distinct phases to ensure maximum data density and semantic fidelity.
 
@@ -18,7 +18,7 @@ graph TD
     end
 ```
 
-## 🛠️ Core Components
+##  Core Components
 
 ### Phase 1: Massive OCR Extraction (`olmocr`)
 - **Engine**: Utilizing the `olmocr` toolkit for high-performance legal document OCR.
@@ -36,7 +36,7 @@ graph TD
 - **Logic**: Matches the Translated Bridge (C) against the Original Bengali (B) to ensure professional legal vocabulary while pairing back to the English Source (A).
 - **Details**: See [ALIGNMENT_METHODOLOGY.md](./ALIGNMENT_METHODOLOGY.md).
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 translation_model/
@@ -51,7 +51,7 @@ translation_model/
 └── README.md                  # Project documentation (this file)
 ```
 
-## 📊 Dataset Statistics (V5.0 Gold)
+## Dataset Statistics (V5.0 Gold)
 
 | Metric | Value |
 | :--- | :--- |
@@ -60,7 +60,7 @@ translation_model/
 | Matching Model | LaBSE (Sentence-Transformers) |
 | Threshold | 0.84 (Average Similarity) |
 
-## ⚙️ Installation & Usage
+##  Installation & Usage
 
 ### 1. Environment Setup
 ```bash
