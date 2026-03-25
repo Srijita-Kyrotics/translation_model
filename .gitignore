@@ -17,7 +17,7 @@ EBMT 1/
 *.docx
 *.csv
 *.txt
-
+*.log
 # IDEs
 .vscode/
 .idea/

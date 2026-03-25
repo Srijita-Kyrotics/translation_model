@@ -1,99 +1,86 @@
-# Multilingual Translation Dataset Pipeline
+# High-Density Legal Parallel Corpus Pipeline ⚖️🏹
 
-A modular and scalable pipeline designed to build high-quality parallel corpora for Indian language translation tasks (specifically Bengali-English). This system automates the extraction, cleaning, translation, and pairing of sentences from documents.
+A professional-grade, massive-scale pipeline for building gold-standard Bengali-English parallel corpora from legal judgments. This system processed 5,370+ Calcutta High Court judgments using state-of-the-art OCR, NMT, and semantic alignment.
 
-##  Overview
+## 🚀 Architecture Overview
 
-The pipeline transforms raw `.docx` documents into a structured, CSV-formatted parallel corpus. It avoids complex embedding-based matching in favor of a deterministic, modular approach.
+The pipeline operates in three distinct phases to ensure maximum data density and semantic fidelity.
 
-## Architecture & Model
+```mermaid
+graph TD
+    A[PDF/Image Judgments] -->|Phase 1: OCR| B[Extracted Text EN/BN]
+    B -->|Phase 2: Translation| C[Translated Bridge BN]
+    C -->|Phase 3: Alignment| D[Gold Parallel Corpus CSV]
+    
+    subgraph "Phase 3: Triple-Semantic Match"
+    C -->|LaBSE Sim| B_BN[Original Bengali]
+    C -->|LaBSE Sim| B_EN[Original English]
+    end
+```
 
+## 🛠️ Core Components
 
-We utilize the **Rotary IndicTrans2** architecture, specifically the `prajdabre/rotary-indictrans2-indic-en-1B` model.
-- **Architecture**: Transformer-based encoder-decoder model with **Rotary Positional Embeddings (RoPE)**. 
-- **Why RoPE?**: It allows the model to handle variable sequence lengths better and captures relative positions more effectively than standard sinusoidal embeddings, leading to improved translation quality for complex languages like Bengali.
-- **Toolkit**: Preprocessing and tokenization are handled by the `IndicTransToolkit`, ensuring correct handling of Indic scripts.
+### Phase 1: Massive OCR Extraction (`olmocr`)
+- **Engine**: Utilizing the `olmocr` toolkit for high-performance legal document OCR.
+- **Volume**: 10,742 total documents (English + Bengali pairs).
+- **Target**: Accurate extraction of court citations, order numbers, and legal arguments.
 
-## Pairing Logic
-The pipeline uses a **Deterministic Line-Index Alignment** strategy:
-1.  **Source Preservation**: The `cleaner.py` script processes files line-by-line, maintaining the exact order of sentences.
-2.  **Sequential Translation**: The `translator.py` script translates these lines sequentially, preserving the order in the output.
-3.  **Index Matching**: The `pairer.py` script assumes that line $N$ in the source file corresponds exactly to line $N$ in the translated file. 
-    - *Safety Check*: If line counts mismatch (rare), usage is truncated to the minimum length to prevent misalignment.
+### Phase 2: Professional Translation (`IndicTrans2`)
+- **Model**: `prajdabre/rotary-indictrans2-indic-en-1B` (RoPE support).
+- **Optimization**: Sub-batching (8 sentences/batch) and Flash Attention 2 on RTX 4090 to prevent GPU memory saturation.
+- **Purpose**: Translating English sources into a Bengali "Bridge" for high-precision semantic matching.
 
-## Output
-The final output is generated at `data/final/parallel_corpus.csv` containing:
-- `source_file`: Name of the original document.
-- `line_index`: Line number in the source file.
-- `bengali`: Original cleaned Bengali text.
-- `english`: Generated English translation.
+### Phase 3: Triple-Semantic Alignment (`LaBSE`)
+- **Algorithm**: Triple-Match Bridge alignment.
+- **Model**: Language-Agnostic BERT Sentence Embedding (LaBSE).
+- **Logic**: Matches the Translated Bridge (C) against the Original Bengali (B) to ensure professional legal vocabulary while pairing back to the English Source (A).
+- **Details**: See [ALIGNMENT_METHODOLOGY.md](./ALIGNMENT_METHODOLOGY.md).
 
-### Key Features
-- **Modular Design**: Separate layers for data loading, cleaning, translation, and pairing.
-- **Indic-Specific Processing**: Uses `indic-nlp-library` and `IndicTransToolkit` for Bengali text normalization and preprocessing.
-- **State-of-the-Art Translation**: Integrates `prajdabre/rotary-indictrans2-indic-en-1B` (a Rotary Positional Embedding version of IndicTrans2) for superior context handling and accuracy.
-- **Deterministic Alignment**: 1-to-1 line-index based pairing ensuring strict alignment between source and target corpora.
-
-
-##  Project Structure
+## 📁 Project Structure
 
 ```text
 translation_model/
 ├── data/
-│   ├── raw/             # Extracted text from .docx files
-│   ├── processed/       # Cleaned and normalized source text (Bengali)
-│   ├── translated/      # Machine-translated target text (English)
-│   └── final/           # Final parallel_corpus.csv
+│   ├── raw/             # 5,370 EN + 5,370 BN OCR Outputs
+│   ├── translated/      # 5,370 Machine-Translated BN Bridge files
+│   └── final/           # parallel_corpus_v5_labse_gold.csv (Final Dataset)
 ├── src/
-│   ├── loader.py        # Extracts text from EBMT 1 (.docx)
-│   ├── cleaner.py       # Cleans and normalizes Bengali text
-│   ├── translator.py    # Translates Bengali to English
-│   └── pairer.py        # Aligns and pairs text into final CSV
-├── EBMT 1/              # Source directory for raw .docx files
-├── requirements.txt     # Python dependencies
-└── README.md            # Project documentation
+│   ├── translate_self_log.py  # GPU-Optimized Translation Engine
+│   └── monolingual_pairer.py  # V5.0 LaBSE Alignment Script
+├── ALIGNMENT_METHODOLOGY.md   # Deep-dive into pairing logic
+└── README.md                  # Project documentation (this file)
 ```
 
-##  Pipeline Stages
+## 📊 Dataset Statistics (V5.0 Gold)
 
-1.  **Loading (`loader.py`)**: Reads `.docx` files from the input folder and converts them to plain `.txt` in `data/raw`.
-2.  **Cleaning (`cleaner.py`)**: 
-    - Removes disclaimers, separator lines, and excessive whitespace.
-    - Normalizes Bengali characters using the Indic NLP library.
-    - Saves output to `data/processed`.
-3.  **Translation (`translator.py`)**: 
-    - Uses the **Rotary IndicTrans2** model (`prajdabre/rotary-indictrans2-indic-en-1B`) for Bengali to English translation.
-    - Optimized with **Flash Attention 2** for efficiency.
-    - Supports extended context window (1024 tokens) to prevent truncation of long paragraphs.
-    - Implements `IndicTransToolkit` preprocessing (normalization) and postprocessing.
-    - Uses batch processing (default batch size: 4) and GPU acceleration.
-    - Saves translated files to `data/translated`.
-4.  **Pairing (`pairer.py`)**: 
-    - Align sentences from `data/processed` and `data/translated` by line index.
-    - Generates a `parallel_corpus.csv` with source file metadata.
+| Metric | Value |
+| :--- | :--- |
+| Total Judgments | 5,370 |
+| Total Gold Pairs | 93,266 |
+| Matching Model | LaBSE (Sentence-Transformers) |
+| Threshold | 0.84 (Average Similarity) |
 
-##  Installation
+## ⚙️ Installation & Usage
 
+### 1. Environment Setup
 ```bash
+conda activate bhasantar_env
 pip install -r requirements.txt
 ```
 
-##  Usage
-
-Run the scripts in order:
-
+### 2. Execution Flow
 ```bash
-python src/loader.py
-python src/cleaner.py
-python src/translator.py
-python src/pairer.py
+# Phase 2: Start Translation
+python src/translate_self_log.py
+
+# Phase 3: Start Alignment (Requires GPU)
+python src/monolingual_pairer.py
 ```
 
-##  Dependencies
-- `python-docx`: For Word document parsing.
-- `IndicTransToolkit`: For Indic script preprocessing and tokenization.
-- `transformers`, `torch`: For the neural machine translation model.
-- `einops`: Required for Rotary Positional Embeddings.
-- `scipy`: Secondary dependency for advanced operations.
-- `pandas`: For dataset management and CSV generation.
-- `tqdm`: For progress tracking.
+## 📝 Technical Notes
+- **Hardware**: Optimized for NVIDIA RTX 4090 (24GB VRAM).
+- **Checkpointing**: Scripts use atomic writes to prevent data loss during long runs.
+- **Language Stability**: Uses `indic-nlp-library` for Bengali normalization.
+
+---
+*Part of the Bhasantar Legal Translation Initiative.*

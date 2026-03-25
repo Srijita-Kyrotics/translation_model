@@ -16,3 +16,4 @@ bitsandbytes
 datasets
 accelerate
 PyYAML
+sentence-transformers

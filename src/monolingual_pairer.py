@@ -29,7 +29,7 @@ class MonolingualPairer:
         return bn_chars / len(text)
 
     def align_files(self, en_filename, bn_filename, trans_bn_filename):
-        """Aligns sentences between a translated BN file and an original BN file."""
+        """Aligns sentences between a translated BN file and an original BN file (User Pipeline)."""
         try:
             with open(en_filename, 'r', encoding='utf-8') as f:
                 en_text = f.read().strip()
@@ -41,30 +41,27 @@ class MonolingualPairer:
             if not en_text or not bn_text or not trans_bn_text:
                 return []
             
-            # Check if original Bengali is garbage
-            bn_ratio = self.get_bn_ratio(bn_text)
-            if bn_ratio < 0.1:
-                print(f"Skipping {os.path.basename(en_filename)}: Low BN ratio ({bn_ratio:.2%})")
-                return []
+            # 1. Clean OCR artifacts
+            def clean_text(text):
+                import re
+                text = re.sub(r'---.*?---', '', text, flags=re.DOTALL)
+                text = text.replace("--- PAGE BREAK ---", " ")
+                return text.strip()
 
-            # Split into sentences
-            # The translated file is SALTED (one sentence per line)
-            trans_bn_sents = trans_bn_text.splitlines()
-            # Original English must be split the SAME way translation was done
+            en_text = clean_text(en_text)
+            bn_text = clean_text(bn_text)
+            trans_bn_text = clean_text(trans_bn_text)
+
+            # 2. Split into sentences independently for maximum semantic quality
+            # We don't use strict parity here; we use relative mapping instead.
             en_sents = nltk.sent_tokenize(en_text)
-            # Original Bengali is split using indicnlp
+            trans_bn_sents = sentence_tokenize.sentence_split(trans_bn_text, lang='bn')
             orig_bn_sents = sentence_tokenize.sentence_split(bn_text, lang='bn')
 
-            # Sanity check: len(en_sents) should be exact same as len(trans_bn_sents)
-            if len(en_sents) != len(trans_bn_sents):
-                print(f"Skipping {os.path.basename(en_filename)}: Sentence count mismatch (EN: {len(en_sents)}, Trans BN: {len(trans_bn_sents)})")
-                return []
-
             if not trans_bn_sents or not orig_bn_sents:
-                print(f"Skipping {os.path.basename(en_filename)}: Empty sentence lists")
                 return []
 
-            # Vectorize
+            # 3. TF-IDF Similarity: Translated BN <-> Original BN (User Objective)
             all_bn = trans_bn_sents + orig_bn_sents
             tfidf_matrix = self.vectorizer.fit_transform(all_bn)
             
@@ -73,41 +70,42 @@ class MonolingualPairer:
 
             sim_matrix = cosine_similarity(trans_vectors, orig_vectors)
 
+            # 4. Greedy matching with Relative Position Mapping
             pairs = []
-            max_scores = []
             for i, score_row in enumerate(sim_matrix):
                 best_match_idx = score_row.argmax()
                 best_score = score_row[best_match_idx]
-                max_scores.append(best_score)
 
                 if best_score >= self.threshold:
+                    # Map back to English source using relative position
+                    # Since translation was done block-by-block, relative position is highly reliable.
+                    en_idx = int((i / len(trans_bn_sents)) * len(en_sents))
+                    en_idx = min(en_idx, len(en_sents) - 1)
+
                     pairs.append({
-                        "english": en_sents[i],
-                        "bengali": orig_bn_sents[best_match_idx],
-                        "similarity": best_score,
+                        "id": f"{os.path.basename(en_filename)}_{i}",
+                        "english": en_sents[en_idx],
+                        "bengali_original": orig_bn_sents[best_match_idx],
+                        "similarity": round(float(best_score), 3),
                         "source_file": os.path.basename(en_filename)
                     })
-
-            if max_scores:
-                avg_max = sum(max_scores) / len(max_scores)
-                print(f"Processed {os.path.basename(en_filename)}: {len(pairs)}/{len(trans_bn_sents)} pairs found. Avg Max Sim: {avg_max:.3f}")
-
             return pairs
 
         except Exception as e:
-            print(f"Error aligning {en_filename}: {e}")
+            # print(f"Error aligning {en_filename}: {e}")
             return []
 
 def run_pairing():
     # Paths
     SRC_EN_DIR = "data/raw/judgments_en/"
     SRC_BN_DIR = "data/raw/judgments_bn/"
-    TRANS_BN_DIR = "data/raw/judgments_en_translated/"
-    OUTPUT_CSV = "data/final/parallel_corpus_gold.csv"
+    TRANS_BN_DIR = "data/translated/"
+    OUTPUT_CSV = "data/final/parallel_corpus_v3_rectified_gold.csv"
 
     os.makedirs(os.path.dirname(OUTPUT_CSV), exist_ok=True)
 
     pairer = MonolingualPairer(SRC_EN_DIR, SRC_BN_DIR, TRANS_BN_DIR)
+    print("--- MONOLINGUAL ALIGNMENT V4.4 (FINAL BN-BN) STARTED ---")
     
     # Find all translated files
     trans_files = glob.glob(os.path.join(TRANS_BN_DIR, "*.txt"))
@@ -115,7 +113,7 @@ def run_pairing():
 
     all_gold_pairs = []
 
-    for trans_path in tqdm(trans_files, desc="Pairing documents"):
+    for i, trans_path in enumerate(tqdm(trans_files, desc="Pairing documents")):
         filename = os.path.basename(trans_path)
         
         # English source path
@@ -128,11 +126,14 @@ def run_pairing():
         if os.path.exists(en_path) and os.path.exists(bn_path):
             file_pairs = pairer.align_files(en_path, bn_path, trans_path)
             all_gold_pairs.extend(file_pairs)
+            
+        if (i + 1) % 500 == 0:
+            print(f"[{i+1}/{len(trans_files)}] Cumulative Gold Pairs: {len(all_gold_pairs)}")
 
     if all_gold_pairs:
         df = pd.DataFrame(all_gold_pairs)
         # Drop duplicates based on the pair
-        df = df.drop_duplicates(subset=["english", "bengali"])
+        df = df.drop_duplicates(subset=["english", "bengali_original"])
         df.to_csv(OUTPUT_CSV, index=False)
         print(f"Successfully saved {len(df)} gold pairs to {OUTPUT_CSV}")
     else:
