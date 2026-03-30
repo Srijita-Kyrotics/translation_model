@@ -37,6 +37,6 @@ def clean_corpus(input_file, output_file):
     print("✅ Cleanup Complete!")
 
 if __name__ == "__main__":
-    input_path = "data/final/parallel_corpus_v5_labse_gold.csv"
-    output_path = "data/final/parallel_corpus_v5_labse_gold_clean.csv"
+    input_path = "data/final/parallel_corpus_v6_combined.csv"
+    output_path = "data/final/parallel_corpus_v6_combined_clean.csv"
     clean_corpus(input_path, output_path)
