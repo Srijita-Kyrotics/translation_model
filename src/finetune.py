@@ -10,6 +10,9 @@ from transformers import (
 )
 from transformers.trainer_utils import get_last_checkpoint
 
+# Enable TF32 for faster matrix multiplications on Ampere+ GPUs (e.g. RTX 4090)
+torch.backends.cuda.matmul.allow_tf32 = True
+
 class StableSeq2SeqTrainer(Seq2SeqTrainer):
     """
     A custom trainer that handles sequence length mismatches between logits and labels,
@@ -38,12 +41,62 @@ class StableSeq2SeqTrainer(Seq2SeqTrainer):
                     logits = logits[:, :labels.shape[1]]
             # ------------------------------
             
-            loss_fct = torch.nn.CrossEntropyLoss(label_smoothing=self.args.label_smoothing_factor)
+            if torch.isnan(logits).any():
+                print("⚠️ NaN detected in logits")
+                
+            loss_fct = torch.nn.CrossEntropyLoss(
+                ignore_index=-100,
+                label_smoothing=self.args.label_smoothing_factor
+            )
             loss = loss_fct(logits.view(-1, logits.size(-1)), labels.reshape(-1))
         else:
             loss = outputs.get("loss")
             
         return (loss, outputs) if return_outputs else loss
+
+    def evaluate(self, eval_dataset=None, ignore_keys=None, metric_key_prefix: str = "eval"):
+        """
+        CUSTOM STREAMING EVALUATION:
+        This overrides the default HuggingFace evaluation loop to strictly iterate batch-by-batch
+        without storing any logits, predictions, or large tensors in CPU RAM.
+        This guarantees stable memory footprint and prevents OOM crashes.
+        """
+        eval_dataloader = self.get_eval_dataloader(eval_dataset)
+        
+        self.model.eval()
+        total_eval_loss = 0.0
+        num_batches = 0
+        
+        # Streaming evaluation loop - process exactly one batch at a time
+        for step, inputs in enumerate(eval_dataloader):
+            inputs = self._prepare_inputs(inputs)
+            batch_size = inputs["input_ids"].size(0)
+            
+            with torch.inference_mode():
+                loss, _ = self.compute_loss(self.model, inputs, return_outputs=True)
+                
+                if loss is not None:
+                    total_eval_loss += loss.item() * batch_size
+                    num_batches += batch_size
+                    
+            del inputs
+            torch.cuda.empty_cache()
+            
+        # Compute final average
+        avg_loss = total_eval_loss / max(num_batches, 1)
+        
+        # Return cleanly accumulated scalar metrics
+        metrics = {
+            f"{metric_key_prefix}_loss": avg_loss,
+        }
+        
+        self.log(metrics)
+        self.control = self.callback_handler.on_evaluate(self.args, self.state, self.control, metrics)
+        
+        # Ensure model goes back to training mode
+        self.model.train()
+        
+        return metrics
 
 def finetune(direction="en-bn"):
     if direction == "bn-en":
@@ -66,12 +119,12 @@ def finetune(direction="en-bn"):
         raise FileNotFoundError(f"Tokenized dataset not found at {tokenized_path}. Please run src/cache_tokenized_dataset.py first.")
     tokenized_dataset = load_from_disk(tokenized_path)
     
-    # 3. Load Model in fp16
-    print(f"Loading model {model_name} in fp16...")
+    # 3. Load Model in bfloat16
+    print(f"Loading model {model_name} in bfloat16...")
     model = AutoModelForSeq2SeqLM.from_pretrained(
         model_name,
         trust_remote_code=True,
-        torch_dtype=torch.float16,
+        torch_dtype=torch.bfloat16,
         device_map="auto"
     )
     
@@ -99,6 +152,7 @@ def finetune(direction="en-bn"):
     training_args = Seq2SeqTrainingArguments(
         output_dir=output_dir,
         per_device_train_batch_size=1, 
+        per_device_eval_batch_size=1,  # Added to strictly bound evaluation RAM
         gradient_accumulation_steps=128, 
         learning_rate=5e-4, 
         weight_decay=0.0001, 
@@ -106,9 +160,9 @@ def finetune(direction="en-bn"):
         logging_steps=1,
         eval_strategy="steps",
         eval_steps=500,
+        prediction_loss_only=True,  # IMPORTANT: Do not accumulate massive logits in RAM, only compute loss
         save_steps=500,
-        save_total_limit=3,
-        predict_with_generate=False,
+        save_total_limit=2,
         fp16=False,
         bf16=True,
         gradient_checkpointing=True,
@@ -156,5 +210,3 @@ if __name__ == "__main__":
     
     finetune(direction=args.direction)
 
-if __name__ == "__main__":
-    finetune()
