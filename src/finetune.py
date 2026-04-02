@@ -154,14 +154,14 @@ def finetune(direction="en-bn"):
         per_device_train_batch_size=1, 
         per_device_eval_batch_size=1,  # Added to strictly bound evaluation RAM
         gradient_accumulation_steps=128, 
-        learning_rate=5e-4, 
+        learning_rate=5e-5, 
         weight_decay=0.0001, 
         max_steps=5000, 
         logging_steps=1,
         eval_strategy="steps",
-        eval_steps=500,
+        eval_steps=100,
         prediction_loss_only=True,  # IMPORTANT: Do not accumulate massive logits in RAM, only compute loss
-        save_steps=500,
+        save_steps=100,
         save_total_limit=2,
         fp16=False,
         bf16=True,
@@ -169,7 +169,7 @@ def finetune(direction="en-bn"):
         optim="adamw_torch",
         lr_scheduler_type="inverse_sqrt",
         label_smoothing_factor=0.1,
-        warmup_steps=4000,
+        warmup_steps=100,
         report_to="none", # Correct way to disable W&B and other integrations
     )
     
