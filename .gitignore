@@ -27,3 +27,8 @@ models/
 .cache/
 indictrans2-finetuned-court/
 indictrans2-merged-court/
+*.bin
+*.pt
+*.safetensors
+checkpoint-*/
+stage1/
